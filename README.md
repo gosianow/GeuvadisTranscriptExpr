@@ -2,7 +2,7 @@
 
 
 `GeuvadisTranscriptExpr` is a data package with transcript expression and bi-allelic genotypes
-corresponding to the chromosome 19 for CEU individuals from the GEUVADIS project, Lappalainen et al.
+corresponding to the chromosome 19 for CEU individuals from the GEUVADIS project (Lappalainen T et al. Transcriptome and genome sequencing uncovers functional variation in humans. Nature. 2013)
 
 
 # Installation 
@@ -10,7 +10,7 @@ corresponding to the chromosome 19 for CEU individuals from the GEUVADIS project
 To install the latest development version, use the `devtool` package (available [here](https://github.com/hadley/devtools))
 
 ```
-devtools::install_github("gosianow/GeuvadisTranscriptExpr")
+devtools::install_github("markrobinsonuzh/GeuvadisTranscriptExpr")
 ```
 
 # Vignette
