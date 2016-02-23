@@ -31,13 +31,17 @@ BiocStyle::latex(use.unsrturl=FALSE)
 
 \begin{document}
 \maketitle
-\noindent This vignette describes version \Sexpr{packageDescription("GeuvadisTranscriptExpr")$Version} of the \Rpackage{GeuvadisTranscriptExpr} package.
+\noindent This vignette describes version 
+\Sexpr{packageDescription("GeuvadisTranscriptExpr")$Version} of 
+the \Rpackage{GeuvadisTranscriptExpr} package.
 \tableofcontents
 
 
 <<setup_knitr, include=FALSE, cache=FALSE>>=
 library(knitr)
-opts_chunk$set(cache = TRUE, tidy = FALSE, tidy.opts = list(blank = FALSE, width.cutoff=70), highlight = FALSE, out.width = "7cm", out.height = "7cm", fig.align = "center")
+opts_chunk$set(cache = TRUE, tidy = FALSE, tidy.opts = list(blank = FALSE, 
+  width.cutoff=70), highlight = FALSE, out.width = "7cm", out.height = "7cm", 
+  fig.align = "center")
 @
 
 
@@ -48,39 +52,74 @@ opts_chunk$set(cache = TRUE, tidy = FALSE, tidy.opts = list(blank = FALSE, width
 \section{Description of the GEUVADIS project}
 
 
-In the GEUVADIS project \cite{Lappalainen2013}, 462 RNA-Seq samples from lymphoblastoid cell lines were obtained. The genome sequencing data of the same individuals is provided by the 1000 Genomes Project. The samples in this project come from five populations: CEPH (CEU), Finns (FIN), British (GBR), Toscani (TSI) and Yoruba (YRI).
+In the GEUVADIS project \cite{Lappalainen2013}, 462 RNA-Seq samples from 
+lymphoblastoid cell lines were obtained. The genome sequencing data of the 
+same individuals is provided by the 1000 Genomes Project. The samples in this 
+project come from five populations: CEPH (CEU), Finns (FIN), British (GBR), 
+Toscani (TSI) and Yoruba (YRI).
 
-In the sQTL analysis, we want to identify genetic variants (here, bi-allelic SNPs) that are associated with changes in splicing. Such SNPs are then called splicing quantitative trait locies (sQTLs).
+In the sQTL analysis, we want to identify genetic variants 
+(here, bi-allelic SNPs) that are associated with changes in splicing. 
+Such SNPs are then called splicing quantitative trait locies (sQTLs).
 
-Ideally, we would like to test the associations of every SNP with every gene. However, such an approach would be very costly computationally and in terms of multiple testing correction. Under the assumption that SNPs that directly affect splicing are likely to be placed in the close surrounding of genes, we test only SNPs that are located within the gene body and within some range upstream and downstream of the gene.
+Ideally, we would like to test the associations of every SNP with every gene. 
+However, such an approach would be very costly computationally and in terms of 
+multiple testing correction. Under the assumption that SNPs that directly 
+affect splicing are likely to be placed in the close surrounding of genes, 
+we test only SNPs that are located within the gene body and within some 
+range upstream and downstream of the gene.
 
 
 \section{Downloading the GEUVADIS data}
 
-In the \Rpackage{GeuvadisTranscriptExpr} package, we use transcript quantification (expected counts from FluxCapacitor) and genotypes available on the GEUVADIS project website \url{http://www.ebi.ac.uk/Tools/geuvadis-das/}.
+In the \Rpackage{GeuvadisTranscriptExpr} package, we use transcript 
+quantification (expected counts from FluxCapacitor) and genotypes 
+available on the GEUVADIS project website 
+\url{http://www.ebi.ac.uk/Tools/geuvadis-das/}.
 
-As a reference genome, we use the Gencode v12 gene annotation available on \url{http://www.gencodegenes.org/releases/12.html}, which we save in a \Rcode{gencode.v12.annotation.gtf} file.
+As a reference genome, we use the Gencode v12 gene annotation available on 
+\url{http://www.gencodegenes.org/releases/12.html}, which we save in a 
+\Rcode{gencode.v12.annotation.gtf} file.
 
-From \url{http://www.ebi.ac.uk/arrayexpress/files/E-GEUV-1/analysis_results/}, we can download a file with information about samples \Rcode{E-GEUV-1.sdrf.txt} and a file with transcript quantification \Rcode{GD660.TrQuantCount.txt}. Let's save them under their original names.
+From \url{http://www.ebi.ac.uk/arrayexpress/files/E-GEUV-1/analysis_results/}, 
+we can download a file with information about samples \Rcode{E-GEUV-1.sdrf.txt} 
+and a file with transcript quantification \Rcode{GD660.TrQuantCount.txt}. 
+Let's save them under their original names.
 
-The VCF files with genotypes are available on \url{http://www.ebi.ac.uk/arrayexpress/files/E-GEUV-1/genotypes/} in the compressed format.
+The VCF files with genotypes are available on 
+\url{http://www.ebi.ac.uk/arrayexpress/files/E-GEUV-1/genotypes/} 
+in the compressed format.
 
-The \R{} code in this vignette assumes that all the files are saved in a current working directory.
+The \R{} code in this vignette assumes that all the files are saved in a 
+current working directory.
 
 
 \section{Data preprocessing}
 
-In the following sections, we shows how you can prepare the GEUVADIS data for the sQTL analysis. We preprocess counts and genotypes for all the populations and chromosomes of the human genome, but the package makes available only the preprocessed data for chromosome 19 from CEU population.
+In the following sections, we shows how you can prepare the GEUVADIS data 
+for the sQTL analysis. We preprocess counts and genotypes for all the 
+populations and chromosomes of the human genome, but the package makes 
+available only the preprocessed data for chromosome 19 from CEU population.
 
-The \R{} code in this section does not run when the vignette is generated, mainly because it takes some time to read in the files with transcript counts and genotypes.
+The \R{} code in this section does not run when the vignette is generated, 
+mainly because it takes some time to read in the files with transcript 
+counts and genotypes.
 
 
 \subsection{Annotation and metadata}
 
 
-To find out which SNPs should be tested with which genes, we need to know the location of genes, which we get from the GTF file. We can import it into \R{} using the \Biocpkg{rtracklayer} package. We save the extracted locations of protein coding genes as BED files (about BED format, see \url{https://genome.ucsc.edu/FAQ/FAQformat.html}) for every chromosome separately. We also remove the \emph{'chr'} string from the chromosome names. Otherwise, we could not read in the VCF files with genotypes, which originally contain only a chromosome number.
+To find out which SNPs should be tested with which genes, we need to know 
+the location of genes, which we get from the GTF file. We can import it into 
+\R{} using the \Biocpkg{rtracklayer} package. We save the extracted locations 
+of protein coding genes as BED files (about BED format, see 
+\url{https://genome.ucsc.edu/FAQ/FAQformat.html}) for every chromosome 
+separately. We also remove the \emph{'chr'} string from the chromosome names. 
+Otherwise, we could not read in the VCF files with genotypes, which 
+originally contain only a chromosome number.
 
-In the \Rpackage{GeuvadisTranscriptExpr} package, you can access the \Rcode{"genes\_chr19.bed"} file.
+In the \Rpackage{GeuvadisTranscriptExpr} package, you can access the 
+\Rcode{"genes\_chr19.bed"} file.
 
 <<eval = TRUE, message = FALSE>>=
 library(GenomicRanges)
@@ -94,24 +133,28 @@ gtf_dir <- "gencode.v12.annotation.gtf"
 gtf <- import(gtf_dir)
 
 ### Keep protein coding genes
-keep_index <- mcols(gtf)$gene_type == "protein_coding" & mcols(gtf)$type == "gene"
+keep_index <- mcols(gtf)$gene_type == "protein_coding" & 
+  mcols(gtf)$type == "gene"
 gtf <- gtf[keep_index]
 ### Remove 'chr' from chromosome names
 seqlevels(gtf) <- gsub(pattern = "chr", replacement = "", x = seqlevels(gtf))
 
 genes_bed <- data.frame(chr = seqnames(gtf), start =  start(gtf),
-                        end = end(gtf), geneId = mcols(gtf)$gene_id,
-                        stringsAsFactors = FALSE)
+  end = end(gtf), geneId = mcols(gtf)$gene_id,
+  stringsAsFactors = FALSE)
 
 for(i in as.character(1:22)){
   genes_bed_sub <- genes_bed[genes_bed$chr == i, ]
   write.table(genes_bed_sub, "genes_chr", i ,".bed", quote = FALSE,
-              sep = "\t", row.names = FALSE, col.names = FALSE)
-  }
+    sep = "\t", row.names = FALSE, col.names = FALSE)
+}
 
 @
 
-The metadata information about sample names and the population they originate from can be accessed from the \Rcode{E-GEUV-1.sdrf.txt} file, and we save it in \Rcode{samples} data frame. Additionally, we create a variable with shorter sample names because such names are used in the genotype files.
+The metadata information about sample names and the population they originate 
+from can be accessed from the \Rcode{E-GEUV-1.sdrf.txt} file, and we save it 
+in \Rcode{samples} data frame. Additionally, we create a variable with shorter 
+sample names because such names are used in the genotype files.
 
 <<eval = TRUE, message = FALSE>>=
 library(limma)
@@ -133,9 +176,12 @@ samples$sample_id_short <- strsplit2(samples$sample_id, "\\.")[,1]
 
 \subsection{Transcript counts}
 
-The \Rcode{GD660.TrQuantCount.txt} file contains quantification for all the populations. We split this table by population and chromosome, and use the short sample names. Then the tables are saved in separate files.
+The \Rcode{GD660.TrQuantCount.txt} file contains quantification for all 
+the populations. We split this table by population and chromosome, and use 
+the short sample names. Then the tables are saved in separate files.
 
-In the \Rpackage{GeuvadisTranscriptExpr} package, you can access the \Rcode{"TrQuantCount\_CEU\_chr19.tsv"} file.
+In the \Rpackage{GeuvadisTranscriptExpr} package, you can access the 
+\Rcode{"TrQuantCount\_CEU\_chr19.tsv"} file.
 
 
 <<eval = FALSE>>=
@@ -143,15 +189,17 @@ expr_dir <- "GD660.TrQuantCount.txt"
 
 expr_all <- read.table(expr_dir, header = TRUE, sep="\t", as.is = TRUE)
 
-expr_all <- expr_all[, c("TargetID", "Gene_Symbol", "Chr", samples$sample_id)]
-colnames(expr_all) <- c("TargetID", "Gene_Symbol", "Chr", samples$sample_id_short)
+expr_all <- expr_all[, c("TargetID", "Gene_Symbol", "Chr", 
+  samples$sample_id)]
+colnames(expr_all) <- c("TargetID", "Gene_Symbol", "Chr", 
+  samples$sample_id_short)
 
 for(j in "CEU"){
   for(i in 1:22){
     expr <- expr_all[expr_all$Chr == i, c("TargetID", "Gene_Symbol",
-        samples$sample_id_short[samples$population == j])]
+      samples$sample_id_short[samples$population == j])]
     write.table(expr, paste0("TrQuantCount_", j, "_chr", i, ".tsv"),
-        quote = FALSE, sep = "\t", row.names = FALSE, col.names = TRUE)
+      quote = FALSE, sep = "\t", row.names = FALSE, col.names = TRUE)
   }
 }
 @
@@ -159,7 +207,11 @@ for(j in "CEU"){
 
 \subsection{Genotypes}
 
-VCF files can be loaded into \R{} using the \Biocpkg{VariantAnnotation} package (see the Annotating Genomic Variants Bioconductor workflow \url{https://bioconductor.org/help/workflows/variants/}). To do so, we have to first \Rfunction{bgzip} and create indexes with \Rfunction{indexTabix}. Both functions are from the \Biocpkg{Rsamtools} package.
+VCF files can be loaded into \R{} using the \Biocpkg{VariantAnnotation} package 
+(see the Annotating Genomic Variants Bioconductor workflow 
+\url{https://bioconductor.org/help/workflows/variants/}). To do so, we have to 
+first \Rfunction{bgzip} and create indexes with \Rfunction{indexTabix}. 
+Both functions are from the \Biocpkg{Rsamtools} package.
 
 <<eval = TRUE, message = FALSE>>=
 library(Rsamtools)
@@ -167,7 +219,7 @@ library(Rsamtools)
 
 <<eval = FALSE>>=
 files <- list.files(path = ".", pattern = "genotypes.vcf.gz",
-    full.names = TRUE, include.dirs = FALSE)
+  full.names = TRUE, include.dirs = FALSE)
 
 ### bgzip and index the vcf files
 for(i in 1:length(files)){
@@ -176,9 +228,14 @@ for(i in 1:length(files)){
 }
 @
 
-We are interested in bi-allelic SNPs that lay within 5000 bases of a gene. Additionally, we want to convert the genotype information into 0 for ref/ref, 1 for ref/not ref, 2 for not ref/not ref, -1 or NA for missing values. Newly encoded genotypes are saved as text files, one file for each chromosome and population.
+We are interested in bi-allelic SNPs that lay within 5000 bases of a gene. 
+Additionally, we want to convert the genotype information into 
+0 for ref/ref, 1 for ref/not ref, 2 for not ref/not ref, -1 or NA for 
+missing values. Newly encoded genotypes are saved as text files, one file 
+for each chromosome and population.
 
-In the \Rpackage{GeuvadisTranscriptExpr} package, you can access the \Rcode{"genotypes\_CEU\_chr19.tsv"} file.
+In the \Rpackage{GeuvadisTranscriptExpr} package, you can access the 
+\Rcode{"genotypes\_CEU\_chr19.tsv"} file.
 
 <<eval = TRUE, message = FALSE>>=
 library(VariantAnnotation)
@@ -189,28 +246,29 @@ library(tools)
 <<eval = FALSE>>=
 ### Extended gene ranges
 window <- 5000
-gene_ranges <- resize(gtf, GenomicRanges::width(gtf) + 2 * window, fix = "center")
+gene_ranges <- resize(gtf, GenomicRanges::width(gtf) + 2 * window, 
+  fix = "center")
 
 chr <- gsub("chr", "", strsplit2(files, split = "\\.")[, 2])
 
 for(j in "CEU"){
   for(i in 1:length(files)){
     cat(j, chr[i], fill = TRUE)
-
+    
     zipped <- paste0(file_path_sans_ext(files[i]), ".bgz")
     idx <- paste0(file_path_sans_ext(files[i]), ".bgz.tbi")
     tab <- TabixFile(zipped, idx)
-
+    
     ### Explore the file header with scanVcfHeader
     hdr <- scanVcfHeader(tab)
     print(all(samples$sample_id_short %in% samples(hdr)))
-
+    
     ### Read a subset of VCF file
     gene_ranges_tmp <- gene_ranges[seqnames(gene_ranges) == chr[i]]
     param <- ScanVcfParam(which = gene_ranges_tmp, samples = 
         samples$sample_id_short[samples$population == j])
     vcf <- readVcf(tab, "hg19", param)
-
+    
     ### Keep only the bi-allelic SNPs
     # width of ref seq
     rw <- width(ref(vcf))
@@ -222,9 +280,9 @@ for(j in "CEU"){
     snp <- rw == 1 & aw <= 1 & nalt == 1
     # subset vcf
     vcfbi <- vcf[snp,]
-
+    
     rowdata <- rowData(vcfbi)
-
+    
     ### Convert genotype into number of alleles different from reference
     geno <- geno(vcfbi)$GT
     geno01 <- geno
@@ -233,17 +291,18 @@ for(j in "CEU"){
     geno01[geno %in% c("0/1", "0|1", "1/0", "1|0")] <- 1 # REF/ALT
     geno01[geno %in% c("1/1", "1|1")] <- 2 # ALT/ALT
     mode(geno01) <- "integer"
-
-    genotypes <- unique(data.frame(chr = seqnames(rowdata), start = start(rowdata), 
-        end = end(rowdata), snpId = rownames(geno01), geno01, 
-        stringsAsFactors = FALSE))
-
+    
+    genotypes <- unique(data.frame(chr = seqnames(rowdata), 
+      start = start(rowdata), end = end(rowdata), snpId = rownames(geno01), 
+      geno01, stringsAsFactors = FALSE))
+    
     ### Sort SNPs by position
     genotypes <- genotypes[order(genotypes[ ,2]), ]
-
-    write.table(genotypes, file = paste0("genotypes_", j, "_chr", chr[i], ".tsv"), 
-        quote = FALSE, sep = "\t", row.names = FALSE, col.names = TRUE)
-
+    
+    write.table(genotypes, file = paste0("genotypes_", j, "_chr", 
+      chr[i], ".tsv"), quote = FALSE, sep = "\t", row.names = FALSE, 
+      col.names = TRUE)
+    
   }
 }
 
