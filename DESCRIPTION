@@ -2,8 +2,8 @@ Package: GeuvadisTranscriptExpr
 Type: Package
 Title: Data package with transcript expression and bi-allelic genotypes from the
          GEUVADIS project
-Version: 0.99.0
-Date: 2016-01-17
+Version: 0.99.1
+Date: 2016-02-17
 Authors@R: c(person(given = "Malgorzata", family = "Nowicka", 
     role = c("aut", "cre"),
     email = "gosia.nowicka@uzh.ch"))
@@ -13,7 +13,7 @@ Description: Provides transcript expression and bi-allelic genotypes
 Depends: R (>= 3.3.0)
 License: GPL (>= 3)
 LazyData: true
-biocViews: SNP, AlternativeSplicing, DifferentialSplicing, Genetics, RNASeq, Sequencing, DataImport
+biocViews: Homo_sapiens_Data, SNPData, Genome, RNASeqData, SequencingData, ExpressionData
 VignetteBuilder: knitr
 Suggests: 
     limma, 
